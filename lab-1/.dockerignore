@@ -1,0 +1,21 @@
+# le fichier .dockeignore est insere pour reduire le poids de l'image
+# et pour des soucis de securite
+
+# Dépendances locales (On laisse Docker faire son propre npm install)
+node_modules
+npm-debug.log
+
+# Git (Inutile dans l'image finale)
+.git
+.gitignore
+
+# Environnement et Secrets
+.env
+.aws
+*.pem
+*.key
+
+# IDE et OS (Pollution visuelle)
+.vscode
+.idea
+.DS_Store
