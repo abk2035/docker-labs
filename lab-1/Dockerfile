@@ -8,13 +8,13 @@ LABEL maintainer="Abk2035.."
 WORKDIR /app
 
 # Copie des packages d'abord pour optimiser le cache Docker
-COPY package.json ./app
+COPY package.json ./
 
 # Installation des dépendances (y compris nodemon)
 RUN npm install
 
 # Copie du reste du code source
-COPY . ./app/
+COPY . .
 
 # On expose le port
 EXPOSE 3000
