@@ -57,7 +57,7 @@ EOF
 while true; do
     collect_data
     # Affiche la boîte de texte 'textbox'
-    dialog --title "Monitoring Système - Neurafrique Labs" \
+    dialog --title "Monitoring Système - Bash Labs" \
            --textbox "$INFOS_FILE" \
            $DIALOG_HEIGHT $DIALOG_WIDTH
            
