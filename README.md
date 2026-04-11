@@ -11,6 +11,10 @@ Configuration D'un dockerfile pour application hello world nodejs-expressjs
 - **Focus** : Build de l'image a partir d'un docker file.
 - **Chemin** : `/lab1`
 
+### 2. 🚀 Backend-frontend docker-compose application de vote 
+build d'une application avec plusieurs services a partir de docker-compose
+- **Focus** : Utilisation du docker-compose.
+- **Chemin** : `/lab2`
 
 
 ### 3. 🛡️ Security & Hardening
