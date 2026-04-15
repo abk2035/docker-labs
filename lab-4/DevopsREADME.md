@@ -146,3 +146,150 @@ Ce document décrit étape par étape la procédure de déploiement d'une applic
 
 ---
 
+## 6. Étape 4 : Configuration du dépôt GitHub
+
+Assurez-vous que votre dépôt GitHub contient les trois fichiers suivants.
+
+#### **Dockerfile**
+
+```dockerfile
+# Dockerfile pour l'application FastAPI Todo
+FROM python:3.14-slim
+
+# Dépendances système
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+ENV PYTHONPATH=/app
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+```
+
+#### **docker-compose.yml**
+
+```yaml
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
+      interval: 5s
+      retries: 5
+
+  web:
+    build: .
+    restart: always
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+    ports:
+      - "8000:8000"
+
+volumes:
+  db_data:
+
+networks:
+  backend:
+    driver: bridge
+```
+
+#### **Jenkinsfile**
+
+Ce fichier contient la définition du pipeline sous forme de code pour Jenkins.
+
+```groovy
+pipeline {
+    agent any
+
+    stages {
+        stage('Récupération du Code') {
+            steps {
+              git branch: 'main', url: 'https://github.com/votre-utilisateur/votre-projet.git'            }
+        }
+
+        stage('Construction de l\'image Docker') {
+            steps {
+                // On se déplace dans le sous-dossier lab-4 pour exécuter le build
+                dir('lab-4') {
+                    sh 'docker build -t fastapi-app:latest .'
+                }
+            }
+        }
+
+        stage('Déploiement avec Docker Compose') {
+            steps {
+                dir('lab-4') {
+                    echo 'Arrêt des anciens conteneurs...'
+                    sh 'docker compose down || true'
+                    
+                    echo 'Lancement des services (FastAPI + PostgreSQL)...'
+                    sh 'docker compose up -d --build'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Nettoyage des images inutilisées pour économiser l'espace disque sur l'EC2
+            sh 'docker image prune -f'
+        }
+        success {
+            echo 'Le déploiement automatisé a réussi !'
+        }
+        failure {
+            echo 'Échec du pipeline. Vérifiez les logs de Jenkins ou Docker.'
+        }
+    }
+}
+
+```
+## **7. Étape 5 : Création et exécution d'un pipeline Jenkins**
+
+1.  **Créer une nouvelle tâche de pipeline dans Jenkins :**
+    * Dans le tableau de bord Jenkins, sélectionnez **Nouvel élément**.
+    * Donnez un nom au projet, choisissez **Pipeline**, puis cliquez sur **OK**.
+
+2.  **Configurer le pipeline :**
+    * Dans la configuration du projet, faites défiler jusqu'à la section **Pipeline**.
+    * Définissez **Définition** sur **Script de pipeline à partir de SCM**.
+    * Choisissez **Git** comme SCM.
+    * Saisissez l'URL de votre dépôt GitHub.
+    * Vérifiez que le **Chemin du script** est `Jenkinsfile`.
+    * Enregistrez la configuration.
+    
+    <img src=diagrammes/.png>
+    
+4.  **Vérification du déploiement :**
+    * Une fois la compilation réussie, votre application FastApi sera accessible à l'adresse `http://<votre-ip-publique-ec2>:5000`.
+    * Vérifiez que les conteneurs s'exécutent bien sur l'instance EC2 à l'aide de la commande `docker ps`.
+
+---    
+
