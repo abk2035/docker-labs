@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Récupération du Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/abk2035/docker-labs.git'
+            }
+        }
+
+        stage('Construction de l\'image Docker') {
+            steps {
+                // On se déplace dans le sous-dossier lab-4 pour exécuter le build
+                dir('lab-4') {
+                    sh 'docker build -t fastapi-app:latest .'
+                }
+            }
+        }
+
+        stage('Déploiement avec Docker Compose') {
+            steps {
+                dir('lab-4') {
+                    echo 'Arrêt des anciens conteneurs...'
+                    sh 'docker compose down || true'
+                    
+                    echo 'Lancement des services (FastAPI + PostgreSQL)...'
+                    sh 'docker compose up -d --build'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Nettoyage des images inutilisées pour économiser l'espace disque sur l'EC2
+            sh 'docker image prune -f'
+        }
+        success {
+            echo 'Le déploiement automatisé a réussi !'
+        }
+        failure {
+            echo 'Échec du pipeline. Vérifiez les logs de Jenkins ou Docker.'
+        }
+    }
+}
