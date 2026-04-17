@@ -1,6 +1,9 @@
 # Dockerfile pour l'application FastAPI Todo
 FROM python:3.14-slim
 
+# Empêche debconf de chercher un terminal interactif
+ARG DEBIAN_FRONTEND=noninteractive
+
 # Dépendances système
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
