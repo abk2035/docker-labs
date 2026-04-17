@@ -141,8 +141,9 @@ Ce document décrit étape par étape la procédure de déploiement d'une applic
     sudo usermod -aG docker jenkins
     sudo systemctl restart jenkins
     ```
-    
-    <img src="diagrams/03.png">
+
+    <img src="diagrammes/tp-devops-jenkins-ui-password.png">
+    <img src="diagrammes/tp-devops-jenkins-ui-new-user-setup.png">
 
 ---
 
