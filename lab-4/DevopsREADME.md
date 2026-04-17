@@ -285,8 +285,9 @@ pipeline {
     * Saisissez l'URL de votre dépôt GitHub.
     * Vérifiez que le **Chemin du script** est `Jenkinsfile`.
     * Enregistrez la configuration.
+      
     
-    <img src=diagrammes/.png>
+    <img src=diagrammes/tp-devops-03.png>
     
 4.  **Vérification du déploiement :**
     * Une fois la compilation réussie, votre application FastApi sera accessible à l'adresse `http://<votre-ip-publique-ec2>:5000`.
