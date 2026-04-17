@@ -11,8 +11,20 @@ pipeline {
         stage('Construction de l\'image Docker') {
             steps {
                 // On se déplace dans le sous-dossier lab-4 pour exécuter le build
+                // On construit l'image qui servira pour les tests unitaires
                 dir('lab-4') {
-                    sh 'docker build -t fastapi-app:latest .'
+                    sh 'docker build -t fastapi-app:test-build .'
+                }
+            }
+        }
+
+        stage('Exécution des Tests Unitaires') {
+            steps {
+                dir('lab-4') {
+                    echo 'Lancement des tests unitaires avec Pytest...'
+                    // -v monte le volume si nécessaire, mais ici on teste l'image buildée
+                    // On lance pytest sur le dossier /app/test (ou le chemin interne à ton image)
+                    sh 'docker run --rm fastapi-app:test-build pytest test/'
                 }
             }
         }
@@ -20,6 +32,10 @@ pipeline {
         stage('Déploiement avec Docker Compose') {
             steps {
                 dir('lab-4') {
+                    echo 'Tests validés ! Déploiement en cours...'
+                    // On tag l'image validée comme 'latest' pour le compose
+                    sh 'docker tag fastapi-app:test-build fastapi-app:latest'
+                    
                     echo 'Arrêt des anciens conteneurs...'
                     sh 'docker compose down || true'
                     
