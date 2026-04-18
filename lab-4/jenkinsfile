@@ -49,9 +49,9 @@ pipeline {
                     echo "Lancement des tests avec Pytest sur ${env.OS_TYPE}..."
                     script {
                         if (env.OS_TYPE == "LINUX") {
-                            sh "docker run --rm ${env.IMAGE_NAME}:test-build pytest test/"
+                            sh "docker run --rm ${env.IMAGE_NAME}:test-build pytest tests/"
                         } else {
-                            bat "docker run --rm ${env.IMAGE_NAME}:test-build pytest test/"
+                            bat "docker run --rm ${env.IMAGE_NAME}:test-build pytest tests/"
                         }
                     }
                 }
