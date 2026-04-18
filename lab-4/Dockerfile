@@ -1,5 +1,5 @@
 # Dockerfile pour l'application FastAPI Todo
-FROM python:3.14-slim
+FROM python:3.11-slim
 
 # Empêche debconf de chercher un terminal interactif
 ARG DEBIAN_FRONTEND=noninteractive
