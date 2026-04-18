@@ -17,7 +17,8 @@
     * [Jenkinsfile](#jenkinsfile)
 7. [Étape 5 : Création et exécution d'un pipeline Jenkins](#7-étape-5-création-et-exécution-d'un-pipeline-Jenkins)
 8. [Conclusion](#8-conclusion)
-9. [Conclusion](#conclusion)
+9. [Diagramme de notre Infrastructure](#Diagramme-de-notre-Infrastructure)
+
 
 ---
 
@@ -294,4 +295,12 @@ pipeline {
     * Vérifiez que les conteneurs s'exécutent bien sur l'instance EC2 à l'aide de la commande `docker ps`.
 
 ---    
+## **8. Conclusion**
+Le pipeline CI/CD est désormais pleinement opérationnel. Tout « git push » vers la branche principale du dépôt GitHub configuré déclenchera automatiquement le pipeline Jenkins, qui compilera la nouvelle image Docker et déploiera l'application mise à jour, garantissant ainsi un flux de travail fluide et automatisé, du développement à la mise en production.
+
+---
+## **9. Diagramme de l'infrastructure**
+   
+   <img src=diagrammes/infrastructure.png>
+
 
