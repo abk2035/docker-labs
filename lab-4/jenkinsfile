@@ -1,7 +1,28 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "fastapi-app"
+        APP_DIR = "lab-4"
+    }
+
     stages {
+        stage('Initialisation & Détection') {
+            steps {
+                script {
+                    // Détection du système d'exploitation pour adapter les commandes
+                    if (isUnix()) {
+                        env.OS_TYPE = "LINUX"
+                        env.SHELL_CMD = "sh"
+                    } else {
+                        env.OS_TYPE = "WINDOWS"
+                        env.SHELL_CMD = "bat"
+                    }
+                    echo "Système détecté : ${env.OS_TYPE}"
+                }
+            }
+        }
+
         stage('Récupération du Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/abk2035/docker-labs.git'
@@ -10,37 +31,48 @@ pipeline {
 
         stage('Construction de l\'image Docker') {
             steps {
-                // On se déplace dans le sous-dossier lab-4 pour exécuter le build
-                // On construit l'image qui servira pour les tests unitaires
-                dir('lab-4') {
-                    sh 'docker build -t fastapi-app:test-build .'
+                dir("${env.APP_DIR}") {
+                    script {
+                        if (env.OS_TYPE == "LINUX") {
+                            sh "docker build -t ${env.IMAGE_NAME}:test-build ."
+                        } else {
+                            bat "docker build -t ${env.IMAGE_NAME}:test-build ."
+                        }
+                    }
                 }
             }
         }
 
         stage('Exécution des Tests Unitaires') {
             steps {
-                dir('lab-4') {
-                    echo 'Lancement des tests unitaires avec Pytest...'
-                    // -v monte le volume si nécessaire, mais ici on teste l'image buildée
-                    // On lance pytest sur le dossier /app/test (ou le chemin interne à ton image)
-                    sh 'docker run --rm fastapi-app:test-build pytest test/'
+                dir("${env.APP_DIR}") {
+                    echo "Lancement des tests avec Pytest sur ${env.OS_TYPE}..."
+                    script {
+                        if (env.OS_TYPE == "LINUX") {
+                            sh "docker run --rm ${env.IMAGE_NAME}:test-build pytest test/"
+                        } else {
+                            bat "docker run --rm ${env.IMAGE_NAME}:test-build pytest test/"
+                        }
+                    }
                 }
             }
         }
 
-        stage('Déploiement avec Docker Compose') {
+        stage('Déploiement') {
             steps {
-                dir('lab-4') {
-                    echo 'Tests validés ! Déploiement en cours...'
-                    // On tag l'image validée comme 'latest' pour le compose
-                    sh 'docker tag fastapi-app:test-build fastapi-app:latest'
-                    
-                    echo 'Arrêt des anciens conteneurs...'
-                    sh 'docker compose down || true'
-                    
-                    echo 'Lancement des services (FastAPI + PostgreSQL)...'
-                    sh 'docker compose up -d --build'
+                dir("${env.APP_DIR}") {
+                    script {
+                        echo "Préparation du déploiement des services..."
+                        if (env.OS_TYPE == "LINUX") {
+                            sh "docker tag ${env.IMAGE_NAME}:test-build ${env.IMAGE_NAME}:latest"
+                            sh "docker compose down || true"
+                            sh "docker compose up -d --build"
+                        } else {
+                            bat "docker tag ${env.IMAGE_NAME}:test-build ${env.IMAGE_NAME}:latest"
+                            bat "docker compose down || ver>nul"
+                            bat "docker compose up -d --build"
+                        }
+                    }
                 }
             }
         }
@@ -48,14 +80,20 @@ pipeline {
 
     post {
         always {
-            // Nettoyage des images inutilisées pour économiser l'espace disque sur l'EC2
-            sh 'docker image prune -f'
+            echo "Nettoyage des images inutilisées..."
+            script {
+                if (env.OS_TYPE == "LINUX") {
+                    sh "docker image prune -f"
+                } else {
+                    bat "docker image prune -f"
+                }
+            }
         }
         success {
-            echo 'Le déploiement automatisé a réussi !'
+            echo "Pipeline terminé avec succès sur ${env.OS_TYPE} !"
         }
         failure {
-            echo 'Échec du pipeline. Vérifiez les logs de Jenkins ou Docker.'
+            echo "Échec du pipeline sur ${env.OS_TYPE}. Vérifiez les logs."
         }
     }
 }
