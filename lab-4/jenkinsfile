@@ -4,6 +4,8 @@ pipeline {
     environment {
         IMAGE_NAME = "fastapi-app"
         APP_DIR = "lab-4"
+        // L'ID du credential créé dans Jenkins (Administrer Jenkins > Credentials)
+        CRED_ID = "fastapi-app-env-file"
     }
 
     stages {
@@ -58,19 +60,27 @@ pipeline {
             }
         }
 
-        stage('Déploiement') {
+        stage('Déploiement Sécurisé') {
             steps {
-                dir("${env.APP_DIR}") {
-                    script {
-                        echo "Préparation du déploiement des services..."
-                        if (env.OS_TYPE == "LINUX") {
-                            sh "docker tag ${env.IMAGE_NAME}:test-build ${env.IMAGE_NAME}:latest"
-                            sh "docker compose down || true"
-                            sh "docker compose up -d --build"
-                        } else {
-                            bat "docker tag ${env.IMAGE_NAME}:test-build ${env.IMAGE_NAME}:latest"
-                            bat "docker compose down || ver>nul"
-                            bat "docker compose up -d --build"
+                // Récupération du fichier .env depuis le coffre-fort Jenkins
+                withCredentials([file(credentialsId: "${env.CRED_ID}", variable: 'SECURE_DOTENV')]) {
+                    dir("${env.APP_DIR}") {
+                        script {
+                            echo "📦 Préparation du déploiement sur ${env.OS_TYPE}..."
+                            
+                            if (env.OS_TYPE == "LINUX") {
+                                // Commande Linux : copier le fichier secret vers .env
+                                sh "cp \$SECURE_DOTENV .env"
+                                sh "docker tag ${env.IMAGE_NAME}:test-build ${env.IMAGE_NAME}:latest"
+                                sh "docker compose down || true"
+                                sh "docker compose up -d --build"
+                            } else {
+                                // Commande Windows : copier le fichier secret vers .env
+                                bat "copy %SECURE_DOTENV% .env"
+                                bat "docker tag ${env.IMAGE_NAME}:test-build ${env.IMAGE_NAME}:latest"
+                                bat "docker compose down || ver>nul"
+                                bat "docker compose up -d --build"
+                            }
                         }
                     }
                 }
