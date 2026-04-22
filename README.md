@@ -16,6 +16,12 @@ build d'une application avec plusieurs services a partir de docker-compose
 - **Focus** : Utilisation du docker-compose.
 - **Chemin** : `/lab2`
 
+### 2. 🚀 Backend docker-compose application FastApi + CI\CD 
+construction d'un pipeline ci\cd avec jenkins ,docker et dpcker-compose
+build d'une application avec plusieurs services a partir de docker-compose
+- **Focus** : Utilisation du docker-compose + jenkins.
+- **Chemin** : `/lab4`
+
 
 ### 3. 🛡️ Security & Hardening
 Mise en pratique des bonnes méthodes de sécurité.
@@ -29,7 +35,8 @@ Mise en pratique des bonnes méthodes de sécurité.
 - [x] **Images** : Multi-stage builds, Alpine vs Debian, Layers optimization.
 - [x] **Persistance** : Bind Mounts pour le dev, Volumes pour la prod.
 - [x] **Networking** : Bridge networks, DNS interne, Reverse Proxy (Nginx).
-- [/] **Orchestration** : Docker Compose avancé (Depends_on, Healthchecks).
+- [x] **Orchestration** : Docker Compose avancé (Depends_on, Healthchecks).
+- [ ] **Pipeline** : 
 
 
 

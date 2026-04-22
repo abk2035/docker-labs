@@ -298,6 +298,9 @@ pipeline {
 ## **8. Conclusion**
 Le pipeline CI/CD est désormais pleinement opérationnel. Tout « git push » vers la branche principale du dépôt GitHub configuré déclenchera automatiquement le pipeline Jenkins, qui compilera la nouvelle image Docker et déploiera l'application mise à jour, garantissant ainsi un flux de travail fluide et automatisé, du développement à la mise en production.
 
+<img src=diagrammes/tp-devops-final.png>
+
+
 ---
 ## **9. Diagramme de l'infrastructure**
    
