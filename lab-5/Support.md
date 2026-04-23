@@ -134,6 +134,86 @@ Create it:
 kubectl apply -f nginx-pod.yaml
 ```
 
+---
+## ♻️ 2.3 ReplicaSet
+
+Un **ReplicaSet** permet d’assurer qu’un nombre donné de **répliques de Pods** sont toujours en cours d’exécution.
+
+💡 Si un Pod tombe, un nouveau est créé automatiquement.
+
+**Exemple** :
+
+```yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-rs
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+```
+
+---
+
+## 📦 **Deployment Lifecycle with `kubectl`**
+
+Un **Deployment** est l’objet Kubernetes **le plus utilisé pour déployer une application**. Il permet :
+
+* Des **mises à jour progressives** (rolling updates)
+* Des **rollbacks**
+* De gérer les **ReplicaSets automatiquement**
+
+**Exemple de déploiement** :
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.21
+```
+## ✅ 5. Bonnes Pratiques de Déploiement dans Kubernetes
+
+| Bonne Pratique ✅                            | Explication                             |
+| ------------------------------------------- | --------------------------------------- |
+| Utilisez des **Deployments**                | Pas de Pods seuls en prod               |
+| Ajoutez des **probes** (readiness/liveness) | Pour vérifier la santé des applications |
+| Définissez les **ressources** (CPU/mémoire) | Pour éviter de saturer le cluster       |
+| Stockez la config via **ConfigMaps**        | Pour séparer config et code             |
+| Stockez les secrets via **Secrets**         | Pour les mots de passe, tokens, etc.    |
+| Utilisez des **labels intelligents**        | Pour filtrer, scaler et monitorer       |
+| Ne jamais utiliser `latest` en prod         | Versionnez vos images                   |
+| Mettez en place un **autoscaler**           | Horizontal Pod Autoscaler (HPA)         |
+| Organisez vos ressources par **namespace**  | dev, staging, prod                      |
+
+---
+
+
+
+
+
 
 
 
