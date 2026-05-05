@@ -194,7 +194,7 @@ spec:
         - name: nginx
           image: nginx:1.21
 ```
-## ✅ 5. Bonnes Pratiques de Déploiement dans Kubernetes
+## ✅ Bonnes Pratiques de Déploiement dans Kubernetes
 
 | Bonne Pratique ✅                            | Explication                             |
 | ------------------------------------------- | --------------------------------------- |
@@ -209,6 +209,31 @@ spec:
 | Organisez vos ressources par **namespace**  | dev, staging, prod                      |
 
 ---
+## ✅ Les Services dans Kubernetes
+
+## 🧠 1. Pourquoi les Services existent ?
+
+### 📍 Problème à résoudre
+
+* Les Pods dans Kubernetes sont **éphémères** : si un Pod meurt, il est recréé avec une **nouvelle IP**.
+* Impossible de **s’adresser à un Pod directement** de manière fiable dans le temps.
+* Kubernetes a besoin d’un moyen de **stabiliser l’accès réseau** à une application.
+
+### ✅ Solution : le **Service**
+
+Un **Service** dans Kubernetes est une **abstraction réseau stable** qui permet :
+
+* De communiquer avec un groupe de Pods de manière **fiable et permanente**.
+* De **découvrir automatiquement** les applications (service discovery).
+* De **répartir la charge (load balancing)** entre les Pods associés.
+
+---
+
+## 🧩 Fonctionnement du Service
+
+* Un Service cible un groupe de **Pods associés par des labels**.
+* Il crée une **IP virtuelle stable** (ClusterIP) + un **nom DNS interne**.
+* Il utilise un **proxy interne (kube-proxy)** pour diriger le trafic vers les Pods.
 
 
 
