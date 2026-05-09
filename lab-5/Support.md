@@ -111,7 +111,7 @@ kubectl config view >> cluster-info.txt
 
 ---
 
-## 📁 Example: Simple Pod YAML (`nginx-pod.yaml`)
+### 📁 Example: Simple Pod YAML (`nginx-pod.yaml`)
 
 ```yaml
 apiVersion: v1
@@ -359,9 +359,9 @@ Et ça redirige vers `api.openai.com`.
 
 
 
-## 📜 4. Exemple YAML pour chaque type
+### 📜 4. Exemple YAML pour chaque type
 
-### 🟢 ClusterIP (par défaut)
+#### 🟢 ClusterIP (par défaut)
 
 ```yaml
 apiVersion: v1
@@ -381,7 +381,7 @@ spec:
 
 ---
 
-### 🟠 NodePort
+#### 🟠 NodePort
 
 ```yaml
 apiVersion: v1
@@ -403,7 +403,7 @@ spec:
 
 ---
 
-### 🔵 LoadBalancer
+#### 🔵 LoadBalancer
 
 ```yaml
 apiVersion: v1
@@ -498,6 +498,8 @@ Kubernetes utilise **kube-proxy** :
 | Sur le Cloud, préférer `LoadBalancer` ou `Ingress`            | Pour une gestion avancée                       |
 | Activer les **readiness probes** sur les Pods                 | Évite d’envoyer du trafic à des Pods non prêts |
 
+
+## ✅ Les Ingress dans Kubernetes
 
 
 
