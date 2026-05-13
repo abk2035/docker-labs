@@ -651,6 +651,8 @@ Creation du Ingress
 kubectl apply -f my-ingress.yml
 ```
 
+� 6. Annotations utiles
+
 
 
 
