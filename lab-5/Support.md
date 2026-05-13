@@ -501,6 +501,43 @@ Kubernetes utilise **kube-proxy** :
 
 ## ✅ Les Ingress dans Kubernetes
 
+## 🧠 1. Pourquoi les Ingress existent ?
+
+Tu exposes un service web (ex: backend-api, frontend, admin-panel). Sans Ingress, tu as 3 choix :
+1. ClusterIP → privé, usage interne uniquement
+2. NodePort → public, mais peu pratique et non flexible
+3. LoadBalancer → pratique, mais un load balancer coûteux par service
+
+## Solution
+
+Ingress = point d’entrée unique pour plusieurs services HTTP/HTTPS, avec :
+• Routage par nom de domaine (app1.monapp.com, api.monapp.com)
+• Routage par chemin (/admin, /api)
+• Support SSL/TLS (HTTPS)
+• Contrôles d'accès (authentification, headers, rate limit, etc.)
+
+## 🧱 2. Architecture générale
+
+       Internet (Client)
+       |
+       [Ingress Controller]
+       |
+       [Ingress Resource]
+       |
+       [Service]
+       |
+       [Pod]
+
+• Ingress Controller : pod spécial qui interprète les règles d’Ingress (NGINX,
+Traefik…)
+• Ingress : objet YAML avec les règles de routage
+• Service : connecte vers les pods
+• Pod : contient le conteneur (app)
+
+� 3. Installation d’un Ingress Controller (NGINX)
+
+
+
 
 
 
