@@ -536,10 +536,120 @@ Traefik…)
 
 � 3. Installation d’un Ingress Controller (NGINX)
 
+a) Pour Minikube (local)
+
+```bash
+minikube addons enable ingress
+minikube tunnel
+```
+
+b) Pour cluster cloud ou kubeadm :
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingressnginx/controller-v1.10.1/deploy/static/provider/cloud/deploy.yaml
+```
+On vérifie l’installation :
+
+```bash
+kubectl get pods -n ingress-nginx
+kubectl get svc -n ingress-nginx
+```
+On voit un pod NGINX Ingress Controller tournant.
+
+📄 4. Création d’un Ingress (Exemple pas à pas)
+
+a) Déployer deux services
+
+app1-deployment.yaml
+
+```bash
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app1
+  template:
+    metadata:
+      labels:
+        app: app1
+    spec:
+      containers:
+        - name: app1
+        image: hashicorp/http-echo
+        args:
+        - "-text=Hello from App1"
+        ports:
+        - containerPort: 5678
+```
+
+son service : 
+
+```bash
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1-service
+spec:
+  selector:
+    app: app1
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+
+app2-deployment.yaml
+(similaire, juste changer les noms)
 
 
+b) Définir un Ingress
 
+ingress.yaml
 
+```bash
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /app1
+        pathType: Prefix
+        backend:
+          service:
+            name: app1-service
+            port:
+              number: 80
+      - path: /app2
+        pathType: Prefix
+        backend:
+          service:
+            name: app2-service
+            port:
+              number: 80
+```
+
+� 5. Tester en local avec Minikube
+
+```bash
+kubectl apply -f app1-deployment.yml
+kubectl apply -f app1-service.yml
+
+kubectl apply -f app2-deployment.yml
+kubectl apply -f app2-service.yml
+```
+verifier les ressources : get pod, get svc
+Creation du Ingress
+
+```bash
+kubectl apply -f my-ingress.yml
+```
 
 
 
