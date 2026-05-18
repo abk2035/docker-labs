@@ -1,1 +1,1 @@
-# TP sur KEBERNETES
+# TP sur KUBERNETES
