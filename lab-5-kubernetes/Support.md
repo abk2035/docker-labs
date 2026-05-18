@@ -653,6 +653,15 @@ kubectl apply -f my-ingress.yml
 
 � 6. Annotations utiles
 
+| Annotation | Utilité |
+
+| nginx.ingress.kubernetes.io/rewrite-target | Réécrit le chemin |
+
+| nginx.ingress.kubernetes.io/auth-url | Rediriger vers un service d’auth |
+
+| nginx.ingress.kubernetes.io/limit-rps | Limite les requêtes/s |
+
+| nginx.ingress.kubernetes.io/ssl-redirect | Forcer le HTTPS |
 
 
 
