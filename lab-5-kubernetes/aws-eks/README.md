@@ -3,10 +3,10 @@
 
 ## PROGRAMME
 
-✅ Créé Son cluster EKS avec Fargate
-✅ Configuré le OIDC provider(s3, )
-✅ Créé le IAM policy et le service account
-✅ Déployé le AWS Load Balancer Controller
+✅ Créé son cluster EKS avec Fargate  
+✅ Configuré le OIDC provider (s3, etc.)  
+✅ Créé la IAM policy et le service account  
+✅ Déployé le AWS Load Balancer Controller  
 ✅ Déployé ton Deployment, Service et Ingress
 
 ## PREREQUIS
