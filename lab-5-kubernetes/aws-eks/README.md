@@ -37,7 +37,7 @@ eksctl create cluster --name demo-cluster --region us-west-2 --fargate
 
 > Cette commande crée un cluster EKS nommé `demo-cluster` dans la région `us-west-2`, en utilisant **Fargate** (mode sans gestion de nœuds EC2, les pods sont directement exécutés sur des ressources managées).
 
----
+
 
 ### ❌ **Supprimer le cluster**
 
@@ -47,8 +47,8 @@ eksctl delete cluster --name demo-cluster --region us-west-2
 
 > Cette commande supprime le cluster EKS nommé `demo-cluster`.
 
-___
-
+---
+ 
 ## Configuré le OIDC provider (s3, etc.)
 
 ### 🧠 **1. Contexte : C’est quoi IAM OIDC dans EKS ?**
