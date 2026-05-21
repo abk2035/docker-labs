@@ -47,6 +47,8 @@ eksctl delete cluster --name demo-cluster --region us-west-2
 
 > Cette commande supprime le cluster EKS nommé `demo-cluster`.
 
+___
+
 ## Configuré le OIDC provider (s3, etc.)
 
 ### 🧠 **1. Contexte : C’est quoi IAM OIDC dans EKS ?**
