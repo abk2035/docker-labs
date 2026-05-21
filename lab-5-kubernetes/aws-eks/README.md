@@ -444,6 +444,8 @@ eksctl create iamserviceaccount \
 
 ---
 
+## ✅ Déployé le AWS Load Balancer Controller
+
 ### 📦 Étape 5 – Installer le contrôleur ALB avec Helm
 
 #### 5.1 Ajouter le dépôt Helm
