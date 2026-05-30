@@ -9,7 +9,7 @@
 ✅ Déployé le AWS Load Balancer Controller  
 ✅ Déployé ton Deployment, Service et Ingress
 
-## CREER SON CLUSTER EKS AVEC FARGATE
+## ✅ CREER SON CLUSTER EKS AVEC FARGATE
 
 ### PREREQUIS
 
@@ -49,7 +49,7 @@ eksctl delete cluster --name demo-cluster --region us-west-2
 
 ---
  
-## Configuré le OIDC provider (s3, etc.)
+## ✅ Configuré le OIDC provider (s3, etc.)
 
 ### 🧠 **1. Contexte : C’est quoi IAM OIDC dans EKS ?**
 
@@ -494,5 +494,210 @@ kubectl logs -n kube-system deployment/aws-load-balancer-controller
 ### 🧪 Étape 7 – Tester avec un Ingress
 
 Une fois installé, vous pouvez déployer un **Ingress** Kubernetes dans un namespace quelconque, et le contrôleur créera automatiquement un **ALB** pour gérer le trafic entrant.
+
+## ✅ Déployé le Deployment, Service et Ingress
+
+### 🎯 Objectif
+
+Déployer le jeu 2048 dans un cluster Amazon EKS en utilisant AWS Fargate pour exécuter les pods sans gérer d'infrastructure serveur, et exposer l'application via un Application Load Balancer (ALB) grâce à AWS Load Balancer Controller.
+
+---
+
+### 🛠️ Étapes de déploiement
+
+#### 1. **Créer un profil Fargate**
+
+```bash
+eksctl create fargateprofile \
+  --cluster demo-cluster \
+  --region us-west-2 \
+  --name alb-sample-app \
+  --namespace game-2048
+```
+
+Cette commande crée un profil Fargate nommé `alb-sample-app` pour le cluster `demo-cluster` dans la région `us-west-2`. Ce profil spécifie que tous les pods déployés dans le namespace `game-2048` seront exécutés sur AWS Fargate, éliminant ainsi le besoin de gérer des instances EC2.
+
+---
+
+#### 2. **Déployer l'application 2048**
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/examples/2048/2048_full.yaml
+```
+
+Cette commande applique les ressources définies dans le fichier YAML, qui comprend :
+
+* **Namespace** : `game-2048`
+* **Deployment** : déploie 5 réplicas du conteneur `docker-2048`
+* **Service** : expose l'application sur le port 80
+* **Ingress** : configure un ALB pour exposer l'application sur Internet
+
+---
+
+### 📄 Contenu du fichier `2048_full.yaml`
+
+```yaml
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: game-2048
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: game-2048
+  name: deployment-2048
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: app-2048
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: app-2048
+    spec:
+      containers:
+      - image: public.ecr.aws/l6m2t8p7/docker-2048:latest
+        imagePullPolicy: Always
+        name: app-2048
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: game-2048
+  name: service-2048
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: app-2048
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: game-2048
+  name: ingress-2048
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: service-2048
+              port:
+                number: 80
+```
+
+---
+
+### 🔍 Explication des composants
+
+* **Namespace `game-2048`** : isole les ressources liées à l'application 2048.
+* **Deployment `deployment-2048`** : déploie 5 instances du conteneur `docker-2048`.
+* **Service `service-2048`** : expose l'application en interne sur le port 80.
+* **Ingress `ingress-2048`** : configure un ALB pour exposer l'application sur Internet. Les annotations spécifient que l'ALB est orienté vers Internet et que les cibles sont des adresses IP (adapté à Fargate).
+
+---
+
+## 🌐 Accéder à l'application
+
+Après quelques minutes, l'ALB sera provisionné. Pour obtenir l'adresse DNS de l'Ingress :
+
+```bash
+kubectl get ingress ingress-2048 -n game-2048
+```
+
+La colonne `ADDRESS` affichera le nom DNS de l'ALB. Vous pouvez accéder à l'application en ouvrant cette URL dans votre navigateur.
+
+## ✅ Supprimer les Ressources creees
+
+### 🧨 Étape 1 – Supprimer l’application déployée (Deployment, Service, Ingress)
+
+```bash
+kubectl delete -f https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/examples/2048/2048_full.yaml
+```
+
+---
+
+### 🧨 Étape 2 – Supprimer le Fargate Profile
+
+Tu dois supprimer **chaque Fargate profile** attaché au cluster :
+
+```bash
+eksctl delete fargateprofile --cluster demo-cluster --name alb-sample-app --region us-west-2
+```
+
+*Adapte `alb-sample-app` au nom réel de ton Fargate profile si besoin.*
+
+---
+
+### 🧨 Étape 3 – Supprimer le contrôleur ALB
+
+Si tu l’as installé avec Helm :
+
+```bash
+helm uninstall aws-load-balancer-controller -n kube-system
+```
+
+---
+
+### 🧨 Étape 4 – Supprimer le Service Account IAM
+
+```bash
+eksctl delete iamserviceaccount \
+  --cluster demo-cluster \
+  --name aws-load-balancer-controller \
+  --namespace kube-system
+```
+
+---
+
+### 🧨 Étape 5 – Supprimer la IAM Policy manuellement (facultatif mais propre)
+
+Liste les policies :
+
+```bash
+aws iam list-policies | grep AWSLoadBalancerControllerIAMPolicy
+```
+
+Supprime la policy si elle n’est plus utilisée :
+
+```bash
+aws iam delete-policy --policy-arn arn:aws:iam::<votre-id>:policy/AWSLoadBalancerControllerIAMPolicy
+```
+
+---
+
+### 🧨 Étape 6 – Supprimer le cluster EKS
+
+```bash
+eksctl delete cluster --name demo-cluster --region us-west-2
+```
+
+---
+
+### 🧨 Étape 7 – Vérifie que tout est bien supprimé
+
+Tu peux aller dans la **console AWS** (EC2, IAM, EKS, VPC) pour confirmer qu'il ne reste :
+
+* Aucun ALB
+* Aucun VPC ou Security Group créé par EKS (optionnel)
+* Aucune IAM Policy résiduelle
+
+
+
 
 
