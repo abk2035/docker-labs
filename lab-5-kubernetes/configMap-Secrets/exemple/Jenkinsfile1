@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Récupération du Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/abk2035/docker-labs.git'
+            }
+        }
+
+        stage('Construction de l\'image Docker') {
+            steps {
+                dir('lab-4') {
+                    bat 'docker build -t fastapi-app:test-build .'
+                }
+            }
+        }
+
+        stage('Exécution des Tests Unitaires') {
+            steps {
+                dir('lab-4') {
+                    echo 'Lancement des tests avec Pytest...'
+                    // Utilisation de bat ici aussi
+                    bat 'docker run --rm fastapi-app:test-build pytest test/'
+                }
+            }
+        }
+
+        stage('Déploiement') {
+            steps {
+                dir('lab-4') {
+                    echo 'Arrêt des anciens conteneurs...'
+                    bat 'docker compose down || ver>nul' // "|| ver>nul" est l'équivalent du "|| true" Linux
+                    
+                    echo 'Lancement des services...'
+                    bat 'docker compose up -d --build'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Nettoyage Windows
+            bat 'docker image prune -f'
+        }
+    }
+}
