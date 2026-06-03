@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: fastapi-config
+
+data:
+  POSTGRES_DB: "todo_db"
+  POSTGRES_HOST: "postgres-service"
+  POSTGRES_PORT: "5432"
+
+  ALGORITHM: "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"

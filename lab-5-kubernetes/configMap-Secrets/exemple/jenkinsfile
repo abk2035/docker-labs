@@ -1,87 +1,267 @@
 pipeline {
+
     agent any
 
     environment {
+
         IMAGE_NAME = "fastapi-app"
-        APP_DIR = "lab-4"
-        // L'ID du credential créé dans Jenkins (Administrer Jenkins > Credentials)
-        CRED_ID = "fastapi-app-env-file"
+        APP_DIR = "lab-5-kubernetes/configMap-Secrets/exemple"
+
+        IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
-        stage('Initialisation & Détection') {
+
+        stage('Initialisation') {
+
             steps {
+
                 script {
-                    // Détection du système d'exploitation pour adapter les commandes
+
                     if (isUnix()) {
                         env.OS_TYPE = "LINUX"
-                        env.SHELL_CMD = "sh"
-                    } else {
+                    }
+                    else {
                         env.OS_TYPE = "WINDOWS"
-                        env.SHELL_CMD = "bat"
                     }
-                    echo "Système détecté : ${env.OS_TYPE}"
+
+                    echo "OS = ${env.OS_TYPE}"
                 }
             }
         }
 
-        stage('Récupération du Code') {
+        stage('Checkout') {
+
             steps {
-                git branch: 'main', url: 'https://github.com/abk2035/docker-labs.git'
+
+                git branch: 'main',
+                url: 'https://github.com/abk2035/docker-labs.git'
             }
         }
 
-        stage('Construction de l\'image Docker') {
+        stage('Build Image') {
+
             steps {
-                dir("${env.APP_DIR}") {
+
+                dir("${APP_DIR}") {
+
                     script {
-                        if (env.OS_TYPE == "LINUX") {
-                            sh "docker build -t ${env.IMAGE_NAME}:test-build ."
+
+                        if (isUnix()) {
+
+                            sh """
+                            docker build \
+                            -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                            """
+
                         } else {
-                            bat "docker build -t ${env.IMAGE_NAME}:test-build ."
+
+                            bat """
+                            docker build ^
+                            -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                            """
                         }
                     }
                 }
             }
         }
 
-        stage('Exécution des Tests Unitaires') {
+        stage('Run Tests') {
+
             steps {
-                dir("${env.APP_DIR}") {
-                    echo "Lancement des tests avec Pytest sur ${env.OS_TYPE}..."
+
+                dir("${APP_DIR}") {
+
                     script {
-                        if (env.OS_TYPE == "LINUX") {
-                            sh "docker run --rm ${env.IMAGE_NAME}:test-build pytest tests/"
+
+                        if (isUnix()) {
+
+                            sh """
+                            docker run --rm \
+                            ${IMAGE_NAME}:${IMAGE_TAG} \
+                            pytest tests/
+                            """
+
                         } else {
-                            bat "docker run --rm ${env.IMAGE_NAME}:test-build pytest tests/"
+
+                            bat """
+                            docker run --rm ^
+                            ${IMAGE_NAME}:${IMAGE_TAG} ^
+                            pytest tests/
+                            """
                         }
                     }
                 }
             }
         }
 
-        stage('Déploiement Sécurisé') {
+        stage('Tag Latest') {
+
             steps {
-                // Récupération du fichier .env depuis le coffre-fort Jenkins
-                withCredentials([file(credentialsId: "${env.CRED_ID}", variable: 'SECURE_DOTENV')]) {
-                    dir("${env.APP_DIR}") {
+
+                script {
+
+                    if (isUnix()) {
+
+                        sh """
+                        docker tag \
+                        ${IMAGE_NAME}:${IMAGE_TAG} \
+                        ${IMAGE_NAME}:latest
+                        """
+
+                    } else {
+
+                        bat """
+                        docker tag ^
+                        ${IMAGE_NAME}:${IMAGE_TAG} ^
+                        ${IMAGE_NAME}:latest
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Create Kubernetes Secret') {
+
+            steps {
+
+                withCredentials([
+
+                    string(
+                        credentialsId: 'postgres-user',
+                        variable: 'POSTGRES_USER'
+                    ),
+
+                    string(
+                        credentialsId: 'postgres-password',
+                        variable: 'POSTGRES_PASSWORD'
+                    ),
+
+                    string(
+                        credentialsId: 'jwt-secret',
+                        variable: 'SECRET_KEY'
+                    )
+
+                ]) {
+
+                    script {
+
+                        if (isUnix()) {
+
+                            sh '''
+                            kubectl create secret generic fastapi-secret \
+                              --from-literal=POSTGRES_USER=$POSTGRES_USER \
+                              --from-literal=POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+                              --from-literal=SECRET_KEY=$SECRET_KEY \
+                              --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+
+                        } else {
+
+                            bat '''
+                            kubectl create secret generic fastapi-secret ^
+                              --from-literal=POSTGRES_USER=%POSTGRES_USER% ^
+                              --from-literal=POSTGRES_PASSWORD=%POSTGRES_PASSWORD% ^
+                              --from-literal=SECRET_KEY=%SECRET_KEY% ^
+                              --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Load Image Into Minikube') {
+
+                    steps {
+
                         script {
-                            echo "📦 Préparation du déploiement sur ${env.OS_TYPE}..."
-                            
-                            if (env.OS_TYPE == "LINUX") {
-                                // Commande Linux : copier le fichier secret vers .env
-                                sh "cp \$SECURE_DOTENV .env"
-                                sh "docker tag ${env.IMAGE_NAME}:test-build ${env.IMAGE_NAME}:latest"
-                                sh "docker compose down || true"
-                                sh "docker compose up -d --build"
+
+                            if (isUnix()) {
+
+                                sh """
+                                minikube image load ${IMAGE_NAME}:latest
+                                """
+
                             } else {
-                                // Commande Windows : copier le fichier secret vers .env
-                                bat "copy %SECURE_DOTENV% .env"
-                                bat "docker tag ${env.IMAGE_NAME}:test-build ${env.IMAGE_NAME}:latest"
-                                bat "docker compose down || ver>nul"
-                                bat "docker compose up -d --build"
+
+                                bat """
+                                minikube image load ${IMAGE_NAME}:latest
+                                """
                             }
                         }
+                    }
+        }
+
+        stage('Deploy Kubernetes') {
+
+            steps {
+
+                dir("${APP_DIR}") {
+
+                    script {
+
+                        if (isUnix()) {
+
+                            sh '''
+
+                            kubectl apply -f k8s/configmap.yaml
+
+                            kubectl apply -f k8s/postgres-deployment.yaml
+                            kubectl apply -f k8s/postgres-service.yaml
+
+                            kubectl apply -f k8s/deployment.yaml
+                            kubectl apply -f k8s/service.yaml
+
+                            kubectl rollout restart deployment/postgres
+
+                            kubectl rollout restart deployment/fastapi-app
+
+                            '''
+                        }
+                        else {
+
+                            bat '''
+
+
+                            kubectl apply -f k8s/configmap.yaml
+
+                            kubectl apply -f k8s/postgres-deployment.yaml
+                            kubectl apply -f k8s/postgres-service.yaml
+
+                            kubectl apply -f k8s/deployment.yaml
+                            kubectl apply -f k8s/service.yaml
+
+                            kubectl rollout restart deployment/postgres
+
+                            kubectl rollout restart deployment/fastapi-app
+
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Verification') {
+
+            steps {
+
+                script {
+
+                    if (isUnix()) {
+
+                        sh '''
+                        kubectl get pods
+                        kubectl get svc
+                        '''
+                    }
+                    else {
+
+                        bat '''
+                        kubectl get pods
+                        kubectl get svc
+                        '''
                     }
                 }
             }
@@ -89,21 +269,30 @@ pipeline {
     }
 
     post {
+
+        success {
+
+            echo "Déploiement Kubernetes terminé avec succès."
+        }
+
+        failure {
+
+            echo "Erreur pendant le pipeline."
+        }
+
         always {
-            echo "Nettoyage des images inutilisées..."
+
             script {
-                if (env.OS_TYPE == "LINUX") {
+
+                if (isUnix()) {
+
                     sh "docker image prune -f"
+
                 } else {
+
                     bat "docker image prune -f"
                 }
             }
-        }
-        success {
-            echo "Pipeline terminé avec succès sur ${env.OS_TYPE} !"
-        }
-        failure {
-            echo "Échec du pipeline sur ${env.OS_TYPE}. Vérifiez les logs."
         }
     }
 }
