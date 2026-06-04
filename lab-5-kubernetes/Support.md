@@ -664,7 +664,391 @@ kubectl apply -f my-ingress.yml
 | nginx.ingress.kubernetes.io/ssl-redirect | Forcer le HTTPS |
 
 
+---
+
 ## ✅ Les ConfigMap et Secrets
+
+### Théorie et Mise en pratique avec FastAPI, PostgreSQL et Jenkins
+
+### 1. Introduction
+
+Dans Kubernetes, les applications ont souvent besoin de paramètres de configuration et d'informations sensibles pour fonctionner correctement.
+
+Exemples :
+
+* Adresse d'une base de données
+* Port d'écoute
+* Niveau de journalisation (logs)
+* Mot de passe de base de données
+* Clé JWT
+* Clé API
+
+Afin de séparer la configuration du code applicatif, Kubernetes fournit deux mécanismes :
+
+* ConfigMap
+* Secret
+
+Cette approche respecte le principe du manifeste des applications Cloud Native :
+
+> "Stocker la configuration en dehors de l'application."
+
+---
+
+### 2. ConfigMap
+
+#### Définition
+
+Un ConfigMap est un objet Kubernetes permettant de stocker des données de configuration non sensibles.
+
+#### Cas d'utilisation
+
+Exemples :
+
+* URL d'un service
+* Nom de base de données
+* Numéro de port
+* Variables métier
+* Paramètres applicatifs
+
+#### Exemple
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: fastapi-config
+
+data:
+  POSTGRES_DB: todo_db
+  POSTGRES_HOST: postgres-service
+  POSTGRES_PORT: "5432"
+
+  ALGORITHM: HS256
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+```
+
+#### Avantages
+
+* Séparation entre code et configuration
+* Modification sans reconstruire l'image Docker
+* Gestion centralisée des paramètres applicatifs
+
+---
+
+### 3. Secret
+
+#### Définition
+
+Un Secret est un objet Kubernetes conçu pour stocker des informations sensibles.
+
+#### Cas d'utilisation
+
+Exemples :
+
+* Mots de passe
+* Clés API
+* Tokens JWT
+* Certificats SSL/TLS
+* Clés privées
+
+#### Exemple
+
+```yaml
+apiVersion: v1
+kind: Secret
+
+metadata:
+  name: fastapi-secret
+
+type: Opaque
+
+stringData:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  SECRET_KEY: mySuperSecretKey
+```
+
+#### Avantages
+
+* Isolation des informations sensibles
+* Contrôle d'accès via RBAC
+* Possibilité d'intégration avec Vault ou Secret Manager
+
+---
+
+### 4. Injection dans les Pods
+
+Kubernetes permet deux méthodes principales :
+
+#### Variables d'environnement
+
+```yaml
+envFrom:
+
+- configMapRef:
+    name: fastapi-config
+
+- secretRef:
+    name: fastapi-secret
+```
+
+L'application récupère alors les valeurs via :
+
+```python
+import os
+
+db_host = os.getenv("POSTGRES_HOST")
+secret_key = os.getenv("SECRET_KEY")
+```
+
+---
+
+#### Volumes
+
+Les ConfigMaps et Secrets peuvent également être montés sous forme de fichiers.
+
+Cas typiques :
+
+* Certificats SSL
+* Fichiers YAML
+* Clés privées
+* Fichiers JSON de comptes de service
+
+---
+
+### 5. Pourquoi utiliser ConfigMap et Secret ?
+
+Sans ConfigMap ni Secret :
+
+```text
+Jenkins
+    ↓
+Docker Build
+    ↓
+Image contenant les variables
+    ↓
+Déploiement
+```
+
+Problèmes :
+
+* Une image différente pour DEV, TEST et PROD
+* Rebuild obligatoire à chaque changement de configuration
+* Risque d'exposition des secrets
+
+---
+
+Avec ConfigMap et Secret :
+
+```text
+Jenkins
+    ↓
+Build Docker
+    ↓
+Image générique
+    ↓
+Kubernetes
+    ├── ConfigMap
+    └── Secret
+```
+
+Avantages :
+
+* Une seule image Docker
+* Même artefact pour tous les environnements
+* Séparation claire entre code et configuration
+* Gestion centralisée des secrets
+
+---
+
+### 6. Cas pratique : FastAPI + PostgreSQL + Jenkins + Kubernetes
+
+#### Variables applicatives
+
+#### ConfigMap
+
+```text
+POSTGRES_DB
+POSTGRES_HOST
+POSTGRES_PORT
+ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES
+```
+
+#### Secret
+
+```text
+POSTGRES_USER
+POSTGRES_PASSWORD
+SECRET_KEY
+```
+
+---
+
+### 7. Architecture du Pipeline CI/CD
+
+L'architecture retenue est la suivante :
+
+```text
+Checkout
+   ↓
+Build Image
+   ↓
+Run Tests
+   ↓
+Tag Latest
+   ↓
+Load Image Into Kubernetes
+   ↓
+Create Secret
+   ↓
+Apply ConfigMap
+   ↓
+Apply PostgreSQL
+   ↓
+Apply FastAPI
+   ↓
+Verification
+```
+
+---
+
+### 8. Description des étapes
+
+#### Checkout
+
+Récupération du code source depuis GitHub.
+
+Objectif :
+
+* Obtenir la dernière version de l'application.
+
+---
+
+#### Build Image
+
+Construction de l'image Docker FastAPI.
+
+Objectif :
+
+* Produire un artefact exécutable.
+
+Important :
+
+Aucune variable métier ou secret n'est injecté dans l'image.
+
+---
+
+#### Run Tests
+
+Exécution des tests unitaires.
+
+Objectif :
+
+* Vérifier la qualité du code avant déploiement.
+
+---
+
+#### Tag Latest
+
+Ajout du tag latest.
+
+Objectif :
+
+* Identifier l'image à déployer.
+
+---
+
+#### Load Image Into Kubernetes
+
+Chargement de l'image dans le cluster Kubernetes local.
+
+Exemple :
+
+```bash
+minikube image load fastapi-app:latest
+```
+
+Objectif :
+
+* Rendre l'image disponible dans Kubernetes.
+
+---
+
+#### Create Secret
+
+Création ou mise à jour du Secret Kubernetes à partir des Credentials Jenkins.
+
+Objectif :
+
+* Fournir les données sensibles à PostgreSQL et FastAPI.
+
+---
+
+#### Apply ConfigMap
+
+Création ou mise à jour du ConfigMap Kubernetes.
+
+Objectif :
+
+* Fournir la configuration non sensible.
+
+---
+
+#### Apply PostgreSQL
+
+Déploiement de PostgreSQL.
+
+Objectif :
+
+* Mettre à disposition la base de données.
+
+---
+
+#### Apply FastAPI
+
+Déploiement de l'application FastAPI.
+
+Objectif :
+
+* Démarrer l'API avec sa configuration.
+
+---
+
+#### Verification
+
+Contrôle du bon fonctionnement du déploiement.
+
+Exemples :
+
+```bash
+kubectl get pods
+
+kubectl get svc
+
+kubectl describe pod
+```
+
+Objectif :
+
+* Vérifier l'état des ressources Kubernetes.
+
+---
+
+### 9. Conclusion
+
+ConfigMap et Secret sont des composants fondamentaux de Kubernetes.
+
+Ils permettent :
+
+* de séparer la configuration du code ;
+* de protéger les informations sensibles ;
+* de réutiliser la même image Docker dans plusieurs environnements ;
+* de simplifier les déploiements CI/CD.
+
+Dans notre implémentation, Jenkins reste responsable de la gestion des secrets, tandis que Kubernetes assure leur distribution aux applications via ConfigMap et Secret.
+
 
 
 
