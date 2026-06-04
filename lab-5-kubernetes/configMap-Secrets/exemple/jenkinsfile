@@ -132,7 +132,7 @@ pipeline {
                         variable: 'POSTGRES_PASSWORD'
                     ),
                     string(
-                        credentialsId: 'postgres-user',
+                        credentialsId: 'postgres_user',
                         variable: 'POSTGRES_USER'
                     ),
 
