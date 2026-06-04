@@ -141,13 +141,23 @@ pipeline {
                         variable: 'SECRET_KEY'
                     )
 
+                    file(
+                        credentialsId: 'kubeconfig',
+                        variable: 'KUBECONFIG_FILE'
+                    )
+
                 ]) {
 
                     script {
+                        
 
                         if (isUnix()) {
 
                             sh '''
+                            
+                            #pour permettre a jenkins de lancer les commandes kubectl
+                            set KUBECONFIG=%KUBECONFIG_FILE%
+
                             kubectl create secret generic fastapi-secret \
                               --from-literal=POSTGRES_USER=$POSTGRES_USER \
                               --from-literal=POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
@@ -158,6 +168,10 @@ pipeline {
                         } else {
 
                             bat '''
+
+                            :: pour permettre a jenkins de lancer les commandes kubectl
+                            set KUBECONFIG=%KUBECONFIG_FILE%
+
                             kubectl create secret generic fastapi-secret ^
                               --from-literal=POSTGRES_USER=%POSTGRES_USER% ^
                               --from-literal=POSTGRES_PASSWORD=%POSTGRES_PASSWORD% ^
