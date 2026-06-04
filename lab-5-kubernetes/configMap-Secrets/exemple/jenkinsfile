@@ -162,7 +162,7 @@ pipeline {
                               --from-literal=POSTGRES_USER=$POSTGRES_USER \
                               --from-literal=POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
                               --from-literal=SECRET_KEY=$SECRET_KEY \
-                              --dry-run=client -o yaml | kubectl apply -f -
+                              --dry-run=client -o yaml | kubectl apply --validate=false -f -
                             '''
 
                         } else {
