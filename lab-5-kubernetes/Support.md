@@ -664,6 +664,8 @@ kubectl apply -f my-ingress.yml
 | nginx.ingress.kubernetes.io/ssl-redirect | Forcer le HTTPS |
 
 
+---
+
 ## ✅ Les ConfigMap et Secrets
 
 ### Théorie et Mise en pratique avec FastAPI, PostgreSQL et Jenkins
