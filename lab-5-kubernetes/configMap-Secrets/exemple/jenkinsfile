@@ -128,7 +128,7 @@ pipeline {
                 withCredentials([
                     
                     string(
-                        credentialsId: 'postgres-password',
+                        credentialsId: 'postgres_password',
                         variable: 'POSTGRES_PASSWORD'
                     ),
                     string(
@@ -137,7 +137,7 @@ pipeline {
                     ),
 
                     string(
-                        credentialsId: 'jwt-secret',
+                        credentialsId: 'jwt_secret',
                         variable: 'SECRET_KEY'
                     )
 
