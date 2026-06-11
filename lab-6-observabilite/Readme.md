@@ -48,7 +48,7 @@
 * Comprendre le comportement du système.
 * Améliorer les systèmes.
 
-![Pourquoi la supervision et l’observabilité](images/why-monitoring-why-observability.png)
+![Pourquoi la supervision et l’observabilité](images/monitoring-et-observabilite.png)
 
 ---
 
