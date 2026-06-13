@@ -1,6 +1,5 @@
 # 💡 L’Observabilité
 
-
 # Introduction 
 
 * L’observabilité est la capacité à comprendre l’état interne d’un système en analysant les données qu’il produit, telles que les **logs (journaux)**, les **métriques** et les **traces**.
@@ -48,7 +47,9 @@
 * Comprendre le comportement du système.
 * Améliorer les systèmes.
 
-![Pourquoi la supervision et l’observabilité](images/why-monitoring-why-observability.png)
+  
+
+![Pourquoi la supervision et l’observabilité](images/monitoring-et-observabilite.png)
 
 ---
 
@@ -143,4 +144,3 @@ Si le SLO est 99,9 % d’uptime (43 min de panne/an), **l’error budget** corre
 * **SLA :** Contrat externe avec le client.
 * **SRE :** Méthodologie interne pour respecter (ou dépasser) le SLA.
 
----
