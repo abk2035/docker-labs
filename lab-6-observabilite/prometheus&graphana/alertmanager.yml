@@ -1,7 +1,7 @@
 global:
   smtp_smarthost: 'smtp.gmail.com:587'
-  smtp_from: 'tonemail@gmail.com'
-  smtp_auth_username: 'tonemail@gmail.com'
+  smtp_from: 'elbobokabo@gmail.com'
+  smtp_auth_username: 'elbobokabo@gmail.com'
   smtp_auth_password: '{{ .smtp_pass }}'
   smtp_require_tls: true
 route:
@@ -9,5 +9,5 @@ route:
 receivers:
   - name: email-notifications
     email_configs:
-      - to: 'destinataire@gmail.com'
+      - to: 'kengneborele@gmail.com'
         send_resolved: true
