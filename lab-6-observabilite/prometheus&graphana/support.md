@@ -223,13 +223,6 @@ Voici l’**architecture type** :
 - **EFK** : Collecte les messages (logs) pour savoir ce qui se passe.
 - **Jaeger** : Suit les requêtes pour voir où elles vont.
 
-**Rôle de chaque partie :**
-1. **Application** : Envoie les données (comme un thermomètre qui donne la température).
-2. **Prometheus** : Rassemble toutes les données (comme un carnet de notes).
-3. **Alertmanager** : Crie “Alerte !” si quelque chose cloche (comme une alarme).
-4. **Grafana** : Montre des graphiques colorés (comme un tableau de bord).
-5. **EFK** : Garde un journal des événements (comme un livre d’histoires).
-6. **Jaeger** : Trace le chemin des requêtes (comme une carte au trésor).
 
 **But :** Connecter tous ces outils pour avoir une vue complète de ton application.
 
@@ -241,7 +234,7 @@ Voici l’**architecture type** :
 
 ---
 
-## 🛠 **Tutoriel : Créer une petite application avec des capteurs**
+## 🛠 **Pratique: Créer une petite application avec des capteurs**
 
 **Ce qu’on fait :** On va construire une **application simple** avec **Flask** (un outil Python) et ajouter des capteurs avec **Prometheus**. On la mettra sur **Kubernetes** (comme une grande boîte pour ranger des apps) avec **Minikube** (une version mini pour tester).
 
@@ -249,26 +242,15 @@ Voici l’**architecture type** :
 
 **But :** Avoir une application surveillée avec des alertes et des graphiques.
 
-**Pourquoi on le fait :** C’est comme construire une petite maison avec des capteurs pour apprendre comment tout fonctionne !
+**Pourquoi on le fait :** Pour apprendre comment tout fonctionne !
 
 ### 📌 **Avant de commencer (Prérequis)**
-
-**Ce qu’on fait :** On vérifie qu’on a tout ce qu’il faut pour commencer.
-
-**Rôle :** S’assurer que notre environnement est prêt, comme vérifier qu’on a tous les ingrédients avant de cuisiner.
-
-**But :** Éviter les problèmes pendant le projet.
-
-**Pourquoi :** Sans ces outils, c’est comme essayer de construire une maison sans marteau !
 
 **4 choses à avoir :**
 1. **Compte AWS** : Une machine virtuelle (EC2) avec Ubuntu 22.04.
 2. **Terminal SSH** : Pour parler à la machine (comme un téléphone pour appeler ton ordinateur).
 3. **Docker et Minikube** : Pour créer et tester l’application.
 4. **kubectl** : Un outil pour donner des ordres à Kubernetes.
-
-📌 **À retenir :**
-- **4 outils** : AWS, SSH, Docker/Minikube, kubectl.
 
 ---
 
@@ -280,7 +262,6 @@ Voici l’**architecture type** :
 
 **But :** Avoir une application qui fonctionne et qui envoie des données à Prometheus.
 
-**Pourquoi :** C’est comme construire une maison et mettre des capteurs pour savoir combien de gens entrent.
 
 1. **Crée un dossier** :
    ```bash
@@ -334,21 +315,11 @@ Voici l’**architecture type** :
 - **But** : Avoir des données à envoyer à Prometheus.
 - **Pourquoi** : Pour tester si nos capteurs marchent bien.
 
-📌 **À retenir :**
-- **3 capteurs** : Visites, Utilisateurs, Temps.
-- **1 endroit** : `/metrics` pour donner les données à Prometheus.
-
 ---
 
-### Étape 2 : Mettre l’application dans une boîte (Docker)
+### Étape 2 : Dockeriser l'application
 
 **Ce qu’on fait :** On met notre application dans une “boîte” appelée **Docker** pour qu’elle soit facile à déplacer.
-
-**Rôle :** Docker est comme une boîte magique qui contient tout ce dont l’application a besoin pour fonctionner.
-
-**But :** Faire en sorte que l’application marche partout, pas seulement sur ton ordinateur.
-
-**Pourquoi :** C’est comme mettre un jouet dans une boîte pour l’envoyer à un ami : tout est bien emballé !
 
 1. **Crée un fichier `Dockerfile`** :
    ```dockerfile
@@ -370,16 +341,6 @@ Voici l’**architecture type** :
    minikube image load ma-super-app:v1
    ```
 
-**Explication :**
-- **Ce qu’on fait** : On crée une “boîte” avec tout ce qu’il faut pour l’application.
-- **Rôle** : Le `Dockerfile` dit à Docker comment construire la boîte.
-- **But** : Préparer l’application pour Kubernetes.
-- **Pourquoi** : Pour que l’application soit prête à être utilisée dans un grand système.
-
-📌 **À retenir :**
-- **3 étapes** : Créer le `Dockerfile`, construire la boîte, l’envoyer à Minikube.
-- **Port 5000** : C’est l’adresse où l’application “habite”.
-
 ---
 
 ### Étape 3 : Lancer l’application sur Kubernetes
@@ -387,10 +348,6 @@ Voici l’**architecture type** :
 **Ce qu’on fait :** On met notre application dans **Kubernetes**, qui est comme un grand garage pour gérer plein de boîtes Docker.
 
 **Rôle :** Kubernetes s’assure que l’application fonctionne bien et est accessible.
-
-**But :** Faire tourner l’application dans un environnement professionnel.
-
-**Pourquoi :** C’est comme ranger ta boîte dans un garage sécurisé où tout est surveillé.
 
 1. **Crée `deployment.yaml`** :
    ```yaml
@@ -444,11 +401,6 @@ Voici l’**architecture type** :
 - **Ce qu’on fait** : On dit à Kubernetes de lancer notre application et de la rendre accessible.
 - **Rôle** : Le `deployment.yaml` lance l’application, le `service.yaml` lui donne une adresse.
 - **But** : Permettre à Prometheus de trouver l’application.
-- **Pourquoi** : Pour que tout soit bien organisé dans notre “garage”.
-
-📌 **À retenir :**
-- **2 fichiers** : `deployment.yaml` (lance l’app), `service.yaml` (donne une adresse).
-- **1 boîte** : Une seule instance de l’app pour tester.
 
 ---
 
@@ -459,8 +411,6 @@ Voici l’**architecture type** :
 **Rôle :** Prometheus va chercher les métriques à l’adresse `/metrics` toutes les 15 secondes.
 
 **But :** Collecter les données pour les analyser plus tard.
-
-**Pourquoi :** C’est comme installer un écran qui montre ce que font tes capteurs.
 
 **Prérequis :** Avoir installé `kube-prometheus-stack` (voir la doc officielle si ce n’est pas fait).
 
@@ -507,7 +457,6 @@ Voici l’**architecture type** :
 
 **But :** Être averti rapidement si l’application plante, tout en gardant les informations secrètes en sécurité.
 
-**Pourquoi :** C’est comme installer une alarme dans ta maison qui t’envoie un SMS si une fenêtre se casse, mais en gardant le code de l’alarme dans un coffre-fort.
 
 #### 1. **Crée une règle d’alerte (`alert.rules.yaml`)**
 **Ce qu’on fait :** On écrit une règle pour dire à Prometheus de surveiller si l’application plante trop souvent.
@@ -515,8 +464,6 @@ Voici l’**architecture type** :
 **Rôle :** Cette règle vérifie si l’application redémarre plus de 2 fois en 5 minutes.
 
 **But :** Déclencher une alerte si quelque chose va mal.
-
-**Pourquoi :** C’est comme mettre un détecteur qui sonne si ta maison a un problème plusieurs fois de suite.
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -544,12 +491,6 @@ spec:
 kubectl apply -f alert.rules.yaml
 ```
 
-**Explication :**
-- **Ce qu’on fait** : On crée une règle qui surveille les redémarrages de l’application.
-- **Rôle** : La règle dit à Prometheus : “Si l’app plante plus de 2 fois en 5 minutes, alerte !”
-- **But** : Détecter les problèmes rapidement.
-- **Pourquoi** : Pour ne pas laisser l’application cassée sans le savoir.
-
 ---
 
 #### 2. **Crée un mot de passe Gmail**
@@ -564,11 +505,6 @@ kubectl apply -f alert.rules.yaml
 - Va sur [https://myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).
 - Crée un mot de passe pour “Alertmanager” (ex. : `abcd efgh ijkl mnop`).
 
-**Explication :**
-- **Ce qu’on fait** : On obtient un mot de passe sécurisé pour Gmail.
-- **Rôle** : Ce mot de passe est utilisé par Alertmanager pour envoyer des emails.
-- **But** : Garder ton compte Gmail sécurisé.
-- **Pourquoi** : Pour éviter de partager ton vrai mot de passe.
 
 ---
 
@@ -673,12 +609,6 @@ receivers:
         send_resolved: true
 ```
 
-**Explication :**
-- **Ce qu’on fait** : On crée un Secret séparé pour le mot de passe Gmail.
-- **Rôle** : Le Secret `alertmanager-gmail-secret` stocke le mot de passe, et `alertmanager.yaml` utilise une variable pour le récupérer.
-- **But** : Améliorer la sécurité en séparant les données sensibles.
-- **Pourquoi** : Cela rend la configuration plus flexible et sécurisée.
-
 **Note :** Cette étape est facultative. Si le mot de passe est déjà dans `alertmanager.yaml` (comme dans le Secret `alertmanager-main`), tu n’as pas besoin de ce Secret supplémentaire. J’inclus cette option pour montrer une pratique courante dans les environnements professionnels.
 
 ---
@@ -690,17 +620,10 @@ receivers:
 
 **But :** S’assurer que Alertmanager est prêt à envoyer des emails.
 
-**Pourquoi :** C’est comme redémarrer ton téléphone après avoir installé une nouvelle application.
-
 ```bash
 kubectl rollout restart statefulset alertmanager-monitoring-kube-prometheus-alertmanager -n monitoring
 ```
 
-**Explication :**
-- **Ce qu’on fait** : On relance Alertmanager.
-- **Rôle** : La commande dit à Kubernetes de mettre à jour Alertmanager avec la nouvelle configuration.
-- **But** : Activer les nouvelles règles et configurations.
-- **Pourquoi** : Pour que tout fonctionne correctement.
 
 ---
 
@@ -720,7 +643,6 @@ kubectl rollout restart statefulset alertmanager-monitoring-kube-prometheus-aler
 
 **But :** S’assurer que tout est bien configuré.
 
-**Pourquoi :** C’est comme tester une alarme de maison pour vérifier qu’elle sonne.
 
 1. **Accède à l’application** :
    ```bash
@@ -785,7 +707,6 @@ kubectl rollout restart statefulset alertmanager-monitoring-kube-prometheus-aler
 
 **But :** Avoir une application qui fonctionne et qui est surveillée.
 
-**Pourquoi :** C’est comme vérifier qu’une maison est bien construite avant d’emménager.
 
 | Étape                     | Détails                              |
 |---------------------------|--------------------------------------|
@@ -797,6 +718,3 @@ kubectl rollout restart statefulset alertmanager-monitoring-kube-prometheus-aler
 | Tester                    | `curl /crash` + vérifier email       |
 | Visualiser avec Grafana   | Graphiques pour 3 métriques          |
 
-📌 **À retenir :**
-- **7 étapes** pour tout faire.
-- **1 résultat** : Une app surveillée avec alertes et graphiques.
