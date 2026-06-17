@@ -139,7 +139,7 @@ pipeline {
                     string(
                         credentialsId: 'jwt_secret',
                         variable: 'SECRET_KEY'
-                    )
+                    ),
 
                     file(
                         credentialsId: 'kubeconfig',
