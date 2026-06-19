@@ -1,53 +1,39 @@
-global:
-  resolve_timeout: 5m
-  smtp_smarthost: 'smtp.gmail.com:587'
-  smtp_from: 'elbobokabo@gmail.com'
-  smtp_auth_username: 'elbobokabo@gmail.com'
-  smtp_auth_password: 'nhrt pgsw cvwg luiz' # Requis (16 caractères sans espaces)
-  smtp_require_tls: true
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+      smtp_smarthost: 'smtp.gmail.com:587'
+      smtp_from: 'tonemail@gmail.com'
+      smtp_auth_username: 'tonemail@gmail.com'
+      smtp_auth_identity: 'tonemail@gmail.com' # votre adresse email
+      smtp_auth_password: 'mbckahysprushglt' # Code à 16 caractères de Google
+      smtp_require_tls: true
 
-route:
-  receiver: "email-notifications" # Vos alertes iront ici par défaut
-  group_by:
-  - namespace
-  routes:
-  - receiver: "null" # Le Watchdog reste désactivé (pour éviter le spam)
-    matchers:
-    - alertname = "Watchdog"
-  group_wait: 30s
-  group_interval: 5m
-  repeat_interval: 12h
+    route:
+      receiver: "email-notifications"
+      group_by:
+      - namespace
+      - alertname
+      routes:
+      - receiver: "null"
+        matchers:
+        - alertname = "Watchdog"
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
 
-inhibit_rules:
-- target_matchers:
-  - severity =~ warning|info
-  source_matchers:
-  - severity = critical
-  equal:
-  - namespace
-  - alertname
-- target_matchers:
-  - severity = info
-  source_matchers:
-  - severity = warning
-  equal:
-  - namespace
-  - alertname
-- target_matchers:
-  - severity = info
-  source_matchers:
-  - alertname = InfoInhibitor
-  equal:
-  - namespace
-- target_matchers:
-  - alertname = InfoInhibitor
+    inhibit_rules:
+    - target_matchers:
+      - severity =~ warning|info
+      source_matchers:
+      - severity = critical
+      equal:
+      - namespace
+      - alertname
 
-receivers:
-- name: "null"
-- name: "email-notifications"
-  email_configs:
-  - to: 'elbobokabo@gmail.com'
-    send_resolved: true
-
-templates:
-- /etc/alertmanager/config/*.tmpl
+    receivers:
+    - name: "null"
+    - name: "email-notifications"
+      email_configs:
+      - to: 'tonemail@gmail.com'
+        send_resolved: true
