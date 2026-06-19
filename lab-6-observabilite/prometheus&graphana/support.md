@@ -465,6 +465,7 @@ Voici l’**architecture type** :
 
 **But :** Déclencher une alerte si quelque chose va mal.
 
+
 ```yaml
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -633,6 +634,78 @@ kubectl rollout restart statefulset alertmanager-monitoring-kube-prometheus-aler
 - **1 email** : Envoyé via Gmail quand l’alerte se déclenche.
 - **Pourquoi utiliser un Secret au lieu d’un ConfigMap ?** Les Secrets sont plus sûrs pour les données sensibles, comme les mots de passe ou les adresses email, car ils sont chiffrés dans Kubernetes.
 
+---
+### Etape 5 (Alternative)
+
+l'etape 5 peut aussi etre faite en Regroupant le alert.rules et le alert-manager.yml en un fichier values.yml 
+
+```bash
+# ==========================================
+# Configuration globale d'Alertmanager
+# ==========================================
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+      smtp_smarthost: 'smtp.gmail.com:587'
+      smtp_from: 'tonemail@gmail.com'
+      smtp_auth_username: 'tonemail@gmail.com'
+      smtp_auth_identity: 'tonemail@gmail.com' # votre adresse email
+      smtp_auth_password: 'mbckahysprushglt' # Code à 16 caractères de Google
+      smtp_require_tls: true
+
+    route:
+      receiver: "email-notifications"
+      group_by:
+        - namespace
+      routes:
+        - receiver: "null"
+          matchers:
+            - alertname = "Watchdog"
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+
+    inhibit_rules:
+      - target_matchers:
+          - severity =~ warning|info
+        source_matchers:
+          - severity = critical
+        equal:
+          - namespace
+          - alertname
+
+    receivers:
+      - name: "null"
+      - name: "email-notifications"
+        email_configs:
+          - to: 'tonemail@gmail.com'
+            send_resolved: true
+
+# ==========================================
+# Injection des Règles d'Alertes Personnalisées
+# ==========================================
+additionalPrometheusRulesMap:
+  alerte-crash:
+    groups:
+      - name: crash-rules
+        rules:
+          - alert: CrashApp
+            expr: increase(kube_pod_container_status_restarts_total[5m]) > 2
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Problème dans l’app !"
+              description: "L’app a planté plus de 2 fois en 5 minutes."
+```
+
+ Ensuite : 
+
+ ```bash
+   helm upgrade monitoring prometheus-community/kube-prometheus-stack -f values.yaml -n monitoring
+   kubectl rollout restart statefulset alertmanager-monitoring-kube-prometheus-alertmanager -n monitoring
+ ```
 ---
 
 ### Étape 6 : Tester l’alerte
