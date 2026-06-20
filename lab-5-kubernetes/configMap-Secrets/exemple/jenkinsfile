@@ -141,10 +141,6 @@ pipeline {
                         variable: 'SECRET_KEY'
                     ),
 
-                    file(
-                        credentialsId: 'kubeconfig',
-                        variable: 'KUBECONFIG_FILE'
-                    )
 
                 ]) {
 
@@ -156,7 +152,9 @@ pipeline {
                             sh '''
                             
                             #pour permettre a jenkins de lancer les commandes kubectl
-                            set KUBECONFIG=%KUBECONFIG_FILE%
+                            #le hubeconfig est stocké dans un fichier temporaire %USERPROFILE%\\.kube\\config et change à chaque redemarrage de mnikube
+                            #on le recupere donc directement sur la machine ou minikube est installé
+                            set KUBECONFIG=%USERPROFILE%\\.kube\\config
 
                             kubectl create secret generic fastapi-secret \
                               --from-literal=POSTGRES_USER=$POSTGRES_USER \
@@ -170,7 +168,9 @@ pipeline {
                             bat '''
 
                             :: pour permettre a jenkins de lancer les commandes kubectl
-                            set KUBECONFIG=%KUBECONFIG_FILE%
+                            ::le hubeconfig est stocké dans un fichier temporaire %USERPROFILE%\\.kube\\config et change à chaque redemarrage de mnikube
+                            :: on le recupere donc directement sur la machine ou minikube est installé
+                            set KUBECONFIG=%USERPROFILE%\\.kube\\config
 
                             kubectl create secret generic fastapi-secret ^
                               --from-literal=POSTGRES_USER=%POSTGRES_USER% ^
