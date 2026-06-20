@@ -156,6 +156,15 @@ pipeline {
                             #on le recupere donc directement sur la machine ou minikube est installé
                             set KUBECONFIG=%USERPROFILE%\\.kube\\config
 
+                            echo ===== WHOAMI =====
+                            whoami
+
+                            echo ===== CLUSTER INFO =====
+                            kubectl cluster-info
+
+                            echo ===== NODES =====
+                            kubectl get nodes
+
                             kubectl create secret generic fastapi-secret \
                               --from-literal=POSTGRES_USER=$POSTGRES_USER \
                               --from-literal=POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
@@ -171,6 +180,12 @@ pipeline {
                             ::le hubeconfig est stocké dans un fichier temporaire %USERPROFILE%\\.kube\\config et change à chaque redemarrage de mnikube
                             :: on le recupere donc directement sur la machine ou minikube est installé
                             set KUBECONFIG=%USERPROFILE%\\.kube\\config
+
+                            echo ===== CLUSTER INFO =====
+                            kubectl cluster-info
+
+                            echo ===== NODES =====
+                            kubectl get nodes
 
                             kubectl create secret generic fastapi-secret ^
                               --from-literal=POSTGRES_USER=%POSTGRES_USER% ^
