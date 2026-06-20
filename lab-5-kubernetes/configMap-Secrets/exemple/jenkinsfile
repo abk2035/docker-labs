@@ -159,11 +159,8 @@ pipeline {
                             echo ===== WHOAMI =====
                             whoami
 
-                            echo ===== CLUSTER INFO =====
-                            kubectl cluster-info
-
-                            echo ===== NODES =====
-                            kubectl get nodes
+                            where kubectl
+                            kubectl version --client
 
                             kubectl create secret generic fastapi-secret \
                               --from-literal=POSTGRES_USER=$POSTGRES_USER \
@@ -181,11 +178,11 @@ pipeline {
                             :: on le recupere donc directement sur la machine ou minikube est installé
                             set KUBECONFIG=%USERPROFILE%\\.kube\\config
 
-                            echo ===== CLUSTER INFO =====
-                            kubectl cluster-info
+                            where kubectl
+                            kubectl version --client
 
-                            echo ===== NODES =====
-                            kubectl get nodes
+                            echo ===== WHOAMI =====
+                            whoami
 
                             kubectl create secret generic fastapi-secret ^
                               --from-literal=POSTGRES_USER=%POSTGRES_USER% ^
